@@ -1,0 +1,46 @@
+server:
+  port: 8080
+---
+spring:
+  application:
+    name: apigateway-service
+  cloud:
+    gateway:
+      default-filters:
+          args:
+            baseMessage: Spring Cloud Gateway GlobalFilter
+            preLogger: true
+            postLogger: true
+      routes:
+        - id: google
+          uri: http://google.com
+          predicates:
+            - Path=/google/{param}
+          filters:
+            - RewritePath=/google(?<segment>/?.*),/search
+            - AddRequestParameter=q,{param}
+        - id: naver
+          uri: http://search.naver.com
+          predicates:
+            - Path=/naver/{param}
+          filters:
+            - name: RewritePath
+              args:
+                regexp: /naver(?<segment>/?.*)
+                replacement: /search.naver
+            - name: AddRequestParameter
+              args:
+                name: query
+                value: '{param}'
+      #Spring Cloud Gateway CORS설정
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - '*'
+            allowedMethods:
+              - '*'
+            allowedHeaders:
+              - '*'
+            allowCredentials: true
+
